@@ -5,6 +5,14 @@ adfree unblocked youtube frontend made with CUM and python
 
 [![cum](https://img.shields.io/badge/made%20with-%F0%9F%92%A7%20cum-white)](#) [![cum](https://img.shields.io/badge/powered%20by-%F0%9F%92%A7%20cum-blue)](#)
 
+# ToDo
+
+* Channels Integration
+* Use Another video player (like videojs or Plyr)
+* Ability To Proxify Video Streams
+
+# Screenshots
+
 Home:
 [![1](https://github.com/Mollomm1/CumTube/blob/main/assets/screenshots/1.png?raw=true)](#)
 Search:
