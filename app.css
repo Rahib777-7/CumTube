@@ -1,0 +1,10 @@
+.search-icon {
+    stroke-width: 2;
+}
+
+@media (min-width: 640px) {
+    .search-icon {
+        w-6;
+        h-6;
+    }
+}
