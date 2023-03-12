@@ -1,4 +1,4 @@
-# CumTube
+[![logo](https://github.com/Mollomm1/CumTube/blob/main/static/logo.png?raw=true)](#)
 adfree unblocked youtube frontend made with CUM and python
 
 > demo : https://CumTube.mollomm1.repl.co
@@ -15,7 +15,6 @@ adfree unblocked youtube frontend made with CUM and python
 
 # ToDo
 
-* Logo
 * Use Another video player (like videojs or Plyr)
 * Ability To Proxify Video Streams
 * Multiple pages for search or channel
