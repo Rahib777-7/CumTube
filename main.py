@@ -5,7 +5,7 @@ def get_related(video):
     results = Search(video.title+video.author).results
     return(results)
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__, template_folder='.', static_url_path='/static', static_folder='static')
 
 @app.route("/")
 def index():
