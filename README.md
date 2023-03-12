@@ -19,6 +19,10 @@ adfree unblocked youtube frontend made with CUM and python
 * Ability To Proxify Video Streams
 * Multiple pages for search or channel
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Mollomm1/CumTube&type=Date)](https://star-history.com/#Mollomm1/CumTube&Date)
+
 # Screenshots
 
 Home:
