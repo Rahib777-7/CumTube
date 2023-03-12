@@ -1,9 +1,65 @@
 from flask import Flask, render_template, request
-from pytube import YouTube, Search
+from pytube import YouTube, Search, Channel
+import concurrent.futures, requests, timeago, datetime
+
+def human_format(num):
+    magnitude = 0
+    try:
+        while abs(int(num)) >= 1000:
+            magnitude += 1
+            num /= 1000.0
+        return '%.2f%s' % (int(num), ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+    except Exception:
+        return '?'
+
+def search_views_human_format(num):
+    magnitude = 0
+    try:
+        num = num.views
+        while abs(int(num)) >= 1000:
+            magnitude += 1
+            num /= 1000.0
+        return '%.2f%s' % (int(num), ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
+    except Exception:
+        return '?'
+
+def search_publishdategetvideodata_better(value, actualtime):
+    try:
+        value = timeago.format(str(value.publish_date))
+        return(value)
+    except Exception as a:
+        return a
+
+def getvideodata(result, actualtime):
+    json = {}
+    json['publishdate'] = search_publishdategetvideodata_better(result, actualtime)
+    json['views'] = search_views_human_format(result)
+    json['title'] = result.title
+    json['video_id'] = result.video_id
+    json['thumbnail_url'] = result.thumbnail_url
+    json['channel_url'] = result.channel_url
+    json['author'] = result.author
+
+    return json
 
 def get_related(video):
-    results = Search(video.title+video.author).results
-    return(results)
+    search_results = Search(video.title+video.author).results
+    actualtime = datetime.datetime.today().strftime('%Y-%m-%d')
+
+    # multithreaded for performance
+    def process_result(result):
+        return getvideodata(result, actualtime)
+    
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(process_result, result) for result in search_results]
+        concurrent.futures.wait(futures)
+
+    data = [future.result() for future in futures]
+    return(data)
+
+def get_channel(channel):
+    data = requests.get("https://pipedapi.kavin.rocks/channel/"+channel).json() # i use piped api bc pytube channel is actually broke
+    return(data)
 
 app = Flask(__name__, template_folder='.', static_url_path='/static', static_folder='static')
 
@@ -13,19 +69,19 @@ def index():
 
 @app.route("/watch/<video_id>")
 def watch(video_id):
-    youtube_url = f"https://www.youtube.com/watch?v={video_id}"
+    youtube_url = 'https://www.youtube.com/watch?v='+video_id
     try:
         video = YouTube(youtube_url)
         video_url = video.streams.get_highest_resolution().url
-        video_title = video.title
-        video_channel = video.author
-        video_description = video.description
-        video_channel_url = video.channel_url
-        video_views = video.views
-        related_videos = get_related(video)
-        return render_template('watch.html', video_url=video_url, video_title=video_title, video_channel=video_channel, related_videos=related_videos, video_description=video_description, video_channel_url=video_channel_url, video_views=video_views)
+        data = get_related(video)
+        return render_template('watch.html', video_url=video_url, video=video, data=data)
     except Exception as e:
         return str(e)
+
+@app.route('/channel/<channel_name>')
+def channel(channel_name):
+    c = get_channel(channel_name)
+    return render_template('channel.html', channel_name=c['name'], videos=c['relatedStreams'], human_format=human_format)
 
 @app.route("/search")
 def search():
@@ -34,7 +90,19 @@ def search():
         return "Please enter a search query"
     try:
         search_results = Search(query).results
-        return render_template("search.html", query=query, results=search_results, videos=search_results)
+        actualtime = datetime.datetime.today().strftime('%Y-%m-%d')
+        
+        # multithreaded for performance
+        def process_result(result):
+            return getvideodata(result, actualtime)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(process_result, result) for result in search_results]
+            concurrent.futures.wait(futures)
+
+        data = [future.result() for future in futures]
+
+        return render_template("search.html", data=data, query=query)
     except Exception as e:
         return str(e)
 
